@@ -2,66 +2,262 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Gerador Mega-Sena</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador Mega-Sena Estatístico</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 18px;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: #22c55e;
+      font-size: 28px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 18px;
+      border-radius: 16px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-size: 17px;
+    }
+
+    select, input, button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 8px;
+      font-size: 17px;
+      border-radius: 10px;
+      border: none;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #22c55e;
+      color: white;
+      font-weight: bold;
+      margin-top: 22px;
+    }
+
+    .resultado {
+      margin-top: 22px;
+      background: #020617;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 16px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    .info {
+      margin-top: 15px;
+      font-size: 13px;
+      color: #94a3b8;
+      text-align: center;
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Gerador Mega-Sena</h1>
 
-  <label>Quantidade de dezenas:</label>
-  <select id="dezenas">
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
-    <option>10</option>
-    <option>11</option>
-    <option>12</option>
-    <option>13</option>
-    <option>14</option>
-    <option>15</option>
-  </select>
+<div class="container">
 
-  <br><br>
+  <h1>🎰 Mega-Sena Estatística</h1>
 
-  <label>Quantidade de jogos:</label>
-  <input type="number" id="qtdJogos" value="10">
+  <div class="card">
 
-  <br><br>
+    <label>Quantidade de dezenas por jogo</label>
+    <select id="dezenas">
+      <option>6</option>
+      <option>7</option>
+      <option>8</option>
+      <option>9</option>
+      <option>10</option>
+      <option>11</option>
+      <option>12</option>
+      <option>13</option>
+      <option>14</option>
+      <option>15</option>
+    </select>
 
-  <button onclick="gerarJogos()">Gerar Jogos</button>
+    <label>Quantidade de jogos</label>
+    <input type="number" id="qtdJogos" value="10" min="1">
 
-  <h2>Jogos Gerados</h2>
-  <pre id="resultado"></pre>
+    <button onclick="gerarJogos()">Gerar Jogos Inteligentes</button>
 
-  <script>
-    function gerarJogo(qtdDezenas) {
-      let numeros = [];
+    <div class="resultado" id="resultado">
+Os jogos aparecerão aqui...
+    </div>
 
-      while (numeros.length < qtdDezenas) {
-        let n = Math.floor(Math.random() * 60) + 1;
+  </div>
 
-        if (!numeros.includes(n)) {
-          numeros.push(n);
-        }
-      }
+  <div class="info">
+    Aleatório + filtros estatísticos | Desenvolvido por Flavio Henrique Origuela Meira
+  </div>
 
-      numeros.sort((a, b) => a - b);
-      return numeros;
+</div>
+
+<script>
+
+function combinacao(n, k) {
+  if (k > n) return 0;
+  let resultado = 1;
+
+  for (let i = 1; i <= k; i++) {
+    resultado = resultado * (n - i + 1) / i;
+  }
+
+  return Math.round(resultado);
+}
+
+function gerarJogo(qtdDezenas) {
+  let numeros = [];
+
+  while (numeros.length < qtdDezenas) {
+    let numero = Math.floor(Math.random() * 60) + 1;
+
+    if (!numeros.includes(numero)) {
+      numeros.push(numero);
     }
+  }
 
-    function gerarJogos() {
-      let qtdDezenas = parseInt(document.getElementById("dezenas").value);
-      let qtdJogos = parseInt(document.getElementById("qtdJogos").value);
-      let resultado = "";
+  return numeros.sort((a, b) => a - b);
+}
 
-      for (let i = 1; i <= qtdJogos; i++) {
-        let jogo = gerarJogo(qtdDezenas);
-        let texto = jogo.map(n => String(n).padStart(2, "0")).join(" - ");
-        resultado += "Jogo " + i + ": " + texto + "\n";
-      }
+function analisarJogo(jogo) {
+  let pares = jogo.filter(n => n % 2 === 0).length;
+  let impares = jogo.length - pares;
+  let soma = jogo.reduce((a, b) => a + b, 0);
 
-      document.getElementById("resultado").textContent = resultado;
+  let faixas = [
+    jogo.filter(n => n >= 1 && n <= 10).length,
+    jogo.filter(n => n >= 11 && n <= 20).length,
+    jogo.filter(n => n >= 21 && n <= 30).length,
+    jogo.filter(n => n >= 31 && n <= 40).length,
+    jogo.filter(n => n >= 41 && n <= 50).length,
+    jogo.filter(n => n >= 51 && n <= 60).length
+  ];
+
+  let maiorSequencia = 1;
+  let sequenciaAtual = 1;
+
+  for (let i = 1; i < jogo.length; i++) {
+    if (jogo[i] === jogo[i - 1] + 1) {
+      sequenciaAtual++;
+      maiorSequencia = Math.max(maiorSequencia, sequenciaAtual);
+    } else {
+      sequenciaAtual = 1;
     }
-  </script>
+  }
+
+  return {
+    pares,
+    impares,
+    soma,
+    faixas,
+    maiorSequencia
+  };
+}
+
+function validarJogo(jogo) {
+  let analise = analisarJogo(jogo);
+  let qtd = jogo.length;
+
+  // Filtro 1: equilíbrio entre pares e ímpares
+  if (qtd === 6 && (analise.pares < 2 || analise.pares > 4)) return false;
+  if (qtd >= 7 && (analise.pares < 2 || analise.pares > qtd - 2)) return false;
+
+  // Filtro 2: soma das dezenas
+  let somaMin = qtd * 18;
+  let somaMax = qtd * 42;
+
+  if (analise.soma < somaMin || analise.soma > somaMax) return false;
+
+  // Filtro 3: evita concentração excessiva em uma faixa
+  if (Math.max(...analise.faixas) >= Math.ceil(qtd / 2) + 1) return false;
+
+  // Filtro 4: evita sequência longa
+  if (analise.maiorSequencia >= 4) return false;
+
+  return true;
+}
+
+function probabilidadeMega(qtdDezenas) {
+  let favoraveis = combinacao(qtdDezenas, 6);
+  let total = combinacao(60, 6);
+  return {
+    favoraveis,
+    total,
+    chance: total / favoraveis
+  };
+}
+
+function gerarJogos() {
+  let qtdDezenas = parseInt(document.getElementById("dezenas").value);
+  let qtdJogos = parseInt(document.getElementById("qtdJogos").value);
+
+  if (qtdJogos <= 0 || isNaN(qtdJogos)) {
+    document.getElementById("resultado").textContent = "Digite uma quantidade válida de jogos.";
+    return;
+  }
+
+  let jogos = [];
+  let tentativas = 0;
+  let limiteTentativas = qtdJogos * 10000;
+
+  while (jogos.length < qtdJogos && tentativas < limiteTentativas) {
+    let jogo = gerarJogo(qtdDezenas);
+    tentativas++;
+
+    let chave = jogo.join("-");
+
+    if (validarJogo(jogo) && !jogos.some(j => j.join("-") === chave)) {
+      jogos.push(jogo);
+    }
+  }
+
+  let texto = "";
+
+  jogos.forEach((jogo, index) => {
+    let analise = analisarJogo(jogo);
+    let dezenas = jogo.map(n => String(n).padStart(2, "0")).join(" - ");
+
+    texto += `Jogo ${index + 1}: ${dezenas}\n`;
+    texto += `Pares: ${analise.pares} | Ímpares: ${analise.impares}\n`;
+    texto += `Soma: ${analise.soma}\n`;
+    texto += `Faixas 01-10/11-20/...: ${analise.faixas.join(" | ")}\n`;
+    texto += `Maior sequência: ${analise.maiorSequencia}\n\n`;
+  });
+
+  let prob = probabilidadeMega(qtdDezenas);
+
+  texto += "ANÁLISE PROBABILÍSTICA\n";
+  texto += `Dezenas por jogo: ${qtdDezenas}\n`;
+  texto += `Combinações internas de 6 dezenas: ${prob.favoraveis}\n`;
+  texto += `Chance aproximada por jogo: 1 em ${Math.round(prob.chance).toLocaleString("pt-BR")}\n`;
+  texto += `Jogos gerados: ${jogos.length}\n`;
+  texto += `Tentativas estatísticas realizadas: ${tentativas}\n\n`;
+  texto += "Observação: os filtros melhoram a qualidade estatística dos jogos, mas não garantem prêmio.";
+
+  document.getElementById("resultado").textContent = texto;
+}
+
+</script>
+
 </body>
 </html>
