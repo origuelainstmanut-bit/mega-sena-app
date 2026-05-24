@@ -9,7 +9,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
-
     body{
       margin:0;
       padding:18px;
@@ -68,11 +67,6 @@
       font-weight:bold;
       margin-top:18px;
       cursor:pointer;
-      transition:0.3s;
-    }
-
-    button:hover{
-      transform:scale(1.02);
     }
 
     .pdf{
@@ -106,7 +100,6 @@
       padding:10px;
       border-radius:10px;
     }
-
   </style>
 </head>
 
@@ -119,24 +112,13 @@
   <div class="card">
 
     <label>Nome do apostador opcional</label>
-
-    <input
-      type="text"
-      id="nomeApostador"
-      placeholder="Digite o nome, se desejar"
-    >
+    <input type="text" id="nomeApostador" placeholder="Digite o nome, se desejar">
 
     <label>CPF opcional</label>
-
-    <input
-      type="text"
-      id="cpfApostador"
-      placeholder="Digite o CPF, se desejar"
-    >
+    <input type="text" id="cpfApostador" placeholder="Digite o CPF, se desejar">
 
     <div class="lgpd">
-      Os dados informados são usados apenas
-      para aparecer no PDF gerado no próprio dispositivo.
+      Os dados informados são usados apenas para aparecer no PDF gerado no próprio dispositivo.
       O app não salva nem envia essas informações.
     </div>
 
@@ -156,37 +138,20 @@
     </select>
 
     <label>Quantidade de jogos</label>
+    <input type="number" id="qtdJogos" value="10" min="1">
 
-    <input
-      type="number"
-      id="qtdJogos"
-      value="10"
-      min="1"
-    >
+    <button onclick="gerarJogos()">🎲 Gerar Jogos Inteligentes</button>
 
-    <button onclick="gerarJogos()">
-      🎲 Gerar Jogos Inteligentes
-    </button>
+    <button class="pdf" onclick="baixarPDF()">📄 Baixar PDF Clean</button>
 
-    <button
-      class="pdf"
-      onclick="baixarPDF()"
-    >
-      📄 Baixar PDF
-    </button>
-
-    <div
-      class="resultado"
-      id="resultado"
-    >
+    <div class="resultado" id="resultado">
 Os jogos aparecerão aqui...
     </div>
 
   </div>
 
   <div class="info">
-    © 2026 Flavio Henrique Origuela Meira.
-    Todos os direitos reservados.
+    © 2026 Flavio Henrique Origuela Meira. Todos os direitos reservados.
   </div>
 
 </div>
@@ -196,83 +161,55 @@ Os jogos aparecerão aqui...
 let jogosPDF = [];
 
 function combinacao(n, k){
-
   if(k > n) return 0;
 
   let resultado = 1;
 
   for(let i = 1; i <= k; i++){
-
-    resultado =
-      resultado * (n - i + 1) / i;
-
+    resultado = resultado * (n - i + 1) / i;
   }
 
   return Math.round(resultado);
-
 }
 
 function gerarJogo(qtdDezenas){
-
   let numeros = [];
 
   while(numeros.length < qtdDezenas){
-
-    let numero =
-      Math.floor(Math.random() * 60) + 1;
+    let numero = Math.floor(Math.random() * 60) + 1;
 
     if(!numeros.includes(numero)){
-
       numeros.push(numero);
-
     }
-
   }
 
   return numeros.sort((a,b)=>a-b);
-
 }
 
 function analisarJogo(jogo){
-
-  let pares =
-    jogo.filter(n => n % 2 === 0).length;
-
-  let impares =
-    jogo.length - pares;
-
-  let soma =
-    jogo.reduce((a,b)=>a+b,0);
+  let pares = jogo.filter(n => n % 2 === 0).length;
+  let impares = jogo.length - pares;
+  let soma = jogo.reduce((a,b)=>a+b,0);
 
   let faixas = [
-
     jogo.filter(n => n >=1 && n <=10).length,
     jogo.filter(n => n >=11 && n <=20).length,
     jogo.filter(n => n >=21 && n <=30).length,
     jogo.filter(n => n >=31 && n <=40).length,
     jogo.filter(n => n >=41 && n <=50).length,
     jogo.filter(n => n >=51 && n <=60).length
-
   ];
 
   let maiorSequencia = 1;
   let seqAtual = 1;
 
   for(let i = 1; i < jogo.length; i++){
-
     if(jogo[i] === jogo[i-1] + 1){
-
       seqAtual++;
-
-      maiorSequencia =
-        Math.max(maiorSequencia, seqAtual);
-
+      maiorSequencia = Math.max(maiorSequencia, seqAtual);
     }else{
-
       seqAtual = 1;
-
     }
-
   }
 
   return {
@@ -282,97 +219,66 @@ function analisarJogo(jogo){
     faixas,
     maiorSequencia
   };
-
 }
 
 function validarJogo(jogo){
+  let analise = analisarJogo(jogo);
+  let qtd = jogo.length;
 
-  let analise =
-    analisarJogo(jogo);
-
-  let qtd =
-    jogo.length;
-
-  if(qtd === 6 &&
-    (analise.pares < 2 ||
-     analise.pares > 4))
-     return false;
-
-  let somaMin =
-    qtd * 18;
-
-  let somaMax =
-    qtd * 42;
-
-  if(analise.soma < somaMin ||
-     analise.soma > somaMax)
-     return false;
-
-  if(Math.max(...analise.faixas)
-    >= Math.ceil(qtd / 2) + 1)
+  if(qtd === 6 && (analise.pares < 2 || analise.pares > 4)){
     return false;
+  }
 
-  if(analise.maiorSequencia >= 4)
+  let somaMin = qtd * 18;
+  let somaMax = qtd * 42;
+
+  if(analise.soma < somaMin || analise.soma > somaMax){
     return false;
+  }
+
+  if(Math.max(...analise.faixas) >= Math.ceil(qtd / 2) + 1){
+    return false;
+  }
+
+  if(analise.maiorSequencia >= 4){
+    return false;
+  }
 
   return true;
-
 }
 
 function probabilidadeMega(qtdDezenas){
-
-  let favoraveis =
-    combinacao(qtdDezenas, 6);
-
-  let total =
-    combinacao(60, 6);
+  let favoraveis = combinacao(qtdDezenas, 6);
+  let total = combinacao(60, 6);
 
   return {
-
     favoraveis,
     total,
     chance: total / favoraveis
-
   };
-
 }
 
 function gerarJogos(){
+  let qtdDezenas = parseInt(document.getElementById("dezenas").value);
+  let qtdJogos = parseInt(document.getElementById("qtdJogos").value);
 
-  let qtdDezenas =
-    parseInt(
-      document.getElementById("dezenas").value
-    );
-
-  let qtdJogos =
-    parseInt(
-      document.getElementById("qtdJogos").value
-    );
+  if(qtdJogos <= 0 || isNaN(qtdJogos)){
+    document.getElementById("resultado").textContent = "Digite uma quantidade válida de jogos.";
+    return;
+  }
 
   let jogos = [];
-
   let tentativas = 0;
 
-  while(jogos.length < qtdJogos &&
-        tentativas < qtdJogos * 10000){
-
-    let jogo =
-      gerarJogo(qtdDezenas);
-
+  while(jogos.length < qtdJogos && tentativas < qtdJogos * 10000){
+    let jogo = gerarJogo(qtdDezenas);
     tentativas++;
 
-    let chave =
-      jogo.join("-");
+    let chave = jogo.join("-");
 
-    if(
-      validarJogo(jogo) &&
-      !jogos.some(j => j.join("-") === chave)
-    ){
-
+    if(validarJogo(jogo) && !jogos.some(j => j.join("-") === chave)){
       jogos.push(jogo);
-
     }
-
   }
 
   jogosPDF = jogos;
@@ -380,205 +286,144 @@ function gerarJogos(){
   let texto = "";
 
   jogos.forEach((jogo,index)=>{
+    let analise = analisarJogo(jogo);
+    let dezenas = jogo.map(n => String(n).padStart(2,"0")).join(" - ");
 
-    let analise =
-      analisarJogo(jogo);
-
-    let dezenas =
-      jogo.map(n =>
-        String(n).padStart(2,"0")
-      ).join(" - ");
-
-    texto +=
-`Jogo ${index+1}
-${dezenas}
-
-Pares: ${analise.pares}
-Ímpares: ${analise.impares}
-Soma: ${analise.soma}
-
-`;
-
+    texto += `Jogo ${index+1}: ${dezenas}\n`;
+    texto += `Pares: ${analise.pares} | Ímpares: ${analise.impares} | Soma: ${analise.soma}\n\n`;
   });
 
-  let prob =
-    probabilidadeMega(qtdDezenas);
+  let prob = probabilidadeMega(qtdDezenas);
 
-  texto +=
-`ANÁLISE PROBABILÍSTICA
+  texto += "ANÁLISE PROBABILÍSTICA\n";
+  texto += `Chance aproximada por jogo: 1 em ${Math.round(prob.chance).toLocaleString("pt-BR")}\n`;
+  texto += `Combinações internas: ${prob.favoraveis}\n`;
+  texto += `Tentativas estatísticas: ${tentativas}\n\n`;
+  texto += "Observação: os filtros estatísticos não garantem premiação.";
 
-Chance aproximada:
-1 em ${Math.round(prob.chance).toLocaleString("pt-BR")}
-
-Combinações:
-${prob.favoraveis}
-
-`;
-
-  document
-    .getElementById("resultado")
-    .textContent = texto;
-
+  document.getElementById("resultado").textContent = texto;
 }
 
 function baixarPDF(){
 
   if(jogosPDF.length === 0){
-
     alert("Gere os jogos primeiro.");
-
     return;
-
   }
 
   const { jsPDF } = window.jspdf;
-
   const doc = new jsPDF();
 
-  let nome =
-    document
-      .getElementById("nomeApostador")
-      .value;
+  let nome = document.getElementById("nomeApostador").value.trim();
+  let cpf = document.getElementById("cpfApostador").value.trim();
+  let data = new Date().toLocaleString("pt-BR");
 
-  let cpf =
-    document
-      .getElementById("cpfApostador")
-      .value;
+  doc.setTextColor(0, 0, 0);
 
-  let data =
-    new Date()
-      .toLocaleString("pt-BR");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(17);
+  doc.text("MEGA-SENA ESTATÍSTICA", 105, 16, {align:"center"});
 
-  doc.setFillColor(6,78,59);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text("Comprovante de jogos gerados por variáveis aleatórias e filtros estatísticos", 105, 23, {align:"center"});
+  doc.text(`Data: ${data}`, 105, 29, {align:"center"});
 
-  doc.rect(0,0,210,297,"F");
-
-  doc.setTextColor(0,255,136);
-
-  doc.setFontSize(22);
-
-  doc.text(
-    "MEGA-SENA ESTATÍSTICA",
-    105,
-    20,
-    {align:"center"}
-  );
-
-  doc.setTextColor(255,255,255);
+  let y = 41;
 
   doc.setFontSize(10);
+  doc.text(`Apostador: ${nome || "_______________________________"}`, 12, y);
+  y += 7;
+  doc.text(`CPF: ${cpf || "_______________________________"}`, 12, y);
 
-  doc.text(
-    `Data: ${data}`,
-    105,
-    30,
-    {align:"center"}
-  );
+  y += 12;
 
-  let y = 45;
+  jogosPDF.forEach((jogo, index) => {
 
-  doc.text(
-    `Apostador: ${nome || "_________________"}`,
-    12,
-    y
-  );
-
-  y += 8;
-
-  doc.text(
-    `CPF: ${cpf || "_________________"}`,
-    12,
-    y
-  );
-
-  y += 15;
-
-  jogosPDF.forEach((jogo,index)=>{
-
-    if(y > 250){
-
+    if(y > 260){
       doc.addPage();
-
-      doc.setFillColor(6,78,59);
-
-      doc.rect(0,0,210,297,"F");
-
-      y = 20;
-
+      y = 18;
     }
 
-    doc.setFillColor(4,120,87);
+    doc.setDrawColor(170, 170, 170);
+    doc.setLineWidth(0.25);
+    doc.roundedRect(12, y - 7, 186, 24, 3, 3);
 
-    doc.roundedRect(
-      12,
-      y-8,
-      186,
-      26,
-      4,
-      4,
-      "F"
-    );
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(`Jogo ${index + 1}`, 18, y + 1);
 
-    doc.setTextColor(0,255,136);
+    let xInicial = 58;
+    let espacamento = 17;
+    let raio = 5.4;
 
-    doc.setFontSize(13);
+    jogo.forEach((numero, i) => {
 
-    doc.text(
-      `Jogo ${index+1}`,
-      18,
-      y
-    );
+      let x = xInicial + i * espacamento;
 
-    y += 10;
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.35);
+      doc.circle(x, y, raio);
 
-    let x = 18;
-
-    jogo.forEach(numero=>{
-
-      doc.setFillColor(16,185,129);
-
-      doc.circle(x+4,y-2,4.5,"F");
-
-      doc.setTextColor(0,0,0);
-
-      doc.setFontSize(9);
-
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
       doc.text(
-        String(numero).padStart(2,"0"),
-        x+4,
-        y+1,
+        String(numero).padStart(2, "0"),
+        x,
+        y + 3.4,
         {align:"center"}
       );
-
-      x += 15;
-
     });
 
-    y += 18;
+    let analise = analisarJogo(jogo);
 
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(
+      `Soma: ${analise.soma} | Pares: ${analise.pares} | Ímpares: ${analise.impares}`,
+      18,
+      y + 11
+    );
+
+    y += 29;
   });
 
-  doc.setTextColor(255,255,255);
+  if(y > 245){
+    doc.addPage();
+    y = 20;
+  }
+
+  let qtdDezenas = parseInt(document.getElementById("dezenas").value);
+  let prob = probabilidadeMega(qtdDezenas);
+
+  y += 4;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.text("Análise probabilística", 12, y);
+
+  y += 7;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Dezenas por jogo: ${qtdDezenas}`, 12, y);
+  y += 6;
+  doc.text(`Chance aproximada por jogo: 1 em ${Math.round(prob.chance).toLocaleString("pt-BR")}`, 12, y);
+  y += 6;
+  doc.text(`Combinações internas de 6 dezenas: ${prob.favoraveis}`, 12, y);
+
+  y += 9;
 
   doc.setFontSize(8);
+  doc.text("Aviso: os filtros estatísticos não garantem premiação. O sorteio oficial é aleatório.", 12, y);
+  y += 5;
+  doc.text("Os dados de apostador e CPF não são armazenados pelo app; aparecem apenas no PDF gerado.", 12, y);
 
-  doc.text(
-    "Os filtros estatísticos não garantem premiação.",
-    12,
-    280
-  );
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.text("© 2026 Flavio Henrique Origuela Meira. Todos os direitos reservados.", 105, 287, {align:"center"});
 
-  doc.text(
-    "© 2026 Flavio Henrique Origuela Meira",
-    105,
-    288,
-    {align:"center"}
-  );
-
-  doc.save(
-    "mega_sena_estatistica.pdf"
-  );
-
+  doc.save("comprovante_mega_sena_clean.pdf");
 }
 
 </script>
